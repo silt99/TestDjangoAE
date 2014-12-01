@@ -4,6 +4,8 @@ Created on 25/11/2014
 @author: silt
 '''
 from google.appengine.ext import ndb
+from google.appengine.api import memcache
+from google.appengine.api import users
 
 DEFAULT_GUESTBOOK_NAME = 'default_guestbook'
 
@@ -20,3 +22,17 @@ class Greeting(ndb.Model):
     author = ndb.UserProperty()
     content = ndb.StringProperty(indexed=False)
     date = ndb.DateTimeProperty(auto_now_add=True)
+
+def GetEntityViaMemcache(entity_key):
+	'''Get entity from memcache if available, from datastore if not.'''
+	entity = memcache.get(str(entity_key))
+
+	if entity is not None:
+		return entity
+  
+	entity = entity_key.get()
+	
+	if entity is not None:
+		memcache.set(str(entity_key), entity)
+
+	return entity
